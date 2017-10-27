@@ -1,3 +1,5 @@
+//CARLOS ARTURO OBREGON RAVELO 20141020009
+
 #include<iostream>
 #include<stdlib.h>
 #include<time.h>
@@ -9,12 +11,65 @@ struct Nodo{
 	Nodo *der;
 };
 
-class ArbolBinario{
-	Nodo *raiz;
-	
+struct NodoPila{
+	int dato;
+	Nodo *sig;
+};
+
+class Pila(){
+	public:
+		Nodo *cabeza;
+		Pila();
+		int sacar();
+		void insertar(int n);
+		bool vacio();
+};
+
+Pila::Pila(){
+	cabeza =NULL;
+}
+
+void Pila::insertar(int n){
+    NodoPila* np, *aux;
+    np->dato = n;
+    np->sig=NULL;
+	if(cabeza==NULL)
+	   	cabeza = np;
+	else{
+		aux = cabeza;
+		while(aux->sig != NULL){
+			aux=aux->sig;
+		}
+		aux->sig=np;
+	}
+}
+
+int Pila::sacar(){
+	NodoPila *aux, *np;
+	int n;
+	np = cabeza;
+	while(np->sig!=NULL){
+		aux = np;
+		np = np->sig;
+	}
+	aux->sig=NULL;
+	n= np->dato;
+	delete np;
+	return n;
+}
+
+bool Pila::vacio(){
+	if(cabeza!=NULL)
+	   return false;
+	return true;
+}
+
+class ArbolBinario{	
+	protected:
 	int profundidad(Nodo *);
 	//Metodos
 	public:
+		Nodo *raiz;
 		ArbolBinario();
 		Nodo *agregar(Nodo *,int);
 		int eliminar();
@@ -23,9 +78,12 @@ class ArbolBinario{
 		void mostrarPostorden(Nodo *);
 		void mostrarNiveles();
 		int profundidad();
+		int contarNodos();
+		int contarHojas();
 		Nodo *buscar(Nodo *,int);
 		Nodo *getRaiz();
 		void setRaiz(Nodo *);
+		bool esCompleto(Nodo *);
 	
 };
 
@@ -40,7 +98,6 @@ Nodo * ArbolBinario::getRaiz(){
 void ArbolBinario::setRaiz(Nodo *raiz){
 	this->raiz=raiz;
 }
-
 
 Nodo * ArbolBinario::agregar(Nodo *raiz,int dato){
 	if(raiz!=NULL){
@@ -79,40 +136,53 @@ int ArbolBinario::eliminar(){
 	Nodo *aux, *hoja=raiz;
 	if(raiz){
 		if(elm==0){
+			cout<<"Entra al elemento a eliminar"<<endl;
             while(hoja->izq!=NULL){
                aux = hoja;
                hoja = hoja->izq;
-            }
+            }      
             do{
                if(profundidad(hoja->izq)<=profundidad(hoja->der)){
                   aux = hoja;
                   hoja = hoja->izq;
                   izq=true;
+                  cout<<"Escoje eliminar del lado izquierdo-izq"<<endl;
                }else{
                   aux = hoja;
                   hoja = hoja->der;
                   izq =false;
+                  cout<<"Escoje eliminar del lado izquierdo-izq"<<endl;
                }
                prof = profundidad(hoja);
             }while(prof>0);
             nodo = hoja->dato;
-            delete hoja;
             if(izq)
                aux->izq = NULL;
             else
                aux->der = NULL;
-            return nodo;
+            delete hoja;
+			return nodo;
         }else{
-            while(hoja->der!=NULL)
-               hoja = hoja->der;
+            while(hoja->der!=NULL){
+               aux=hoja;
+			   hoja = hoja->der;
+			}
             do{
-               if(profundidad(hoja->izq)>=profundidad(hoja->der))
-                  hoja = hoja->izq;
-               else
+               if(profundidad(hoja->izq)>=profundidad(hoja->der)){
+				  izq = true;
+				  aux = hoja;
+				  hoja = hoja->izq;
+               }else{
+               	  izq = false;
+               	  aux = hoja;
                   hoja = hoja->der;
-               prof = profundidad(hoja);
+               }prof = profundidad(hoja);
             }while(prof>0);
             nodo = hoja->dato;
+            if(izq)
+			   aux->izq = NULL;
+			else
+			   aux->der = NULL;   
             delete hoja;
             return nodo;
         }
@@ -140,6 +210,28 @@ void ArbolBinario::mostrarPostorden(Nodo *raiz){
 		mostrarPostorden(raiz->izq);
 		mostrarPostorden(raiz->der);
 		cout<<raiz->dato<<" ";
+	}
+}
+
+void ArbolBinario::mostrarNiveles(){
+	Pila p;
+	Nodo *n = raiz, *izq, *der;
+	int nodo = n->dato;
+	p.insertar(nodo);
+	izq = n;
+	der = n;
+	while(!p.vacio()){
+		cout<<p.sacar()<<" ";
+		izq = izq->izq;
+		der = der->der;
+		if(izq->izq!=NULL){
+			nodo = izq->dato;
+			p.insertar(nodo);
+		}
+		if(der->der!=NULL){
+			nodo = der->dato;
+			p.insertar(nodo);
+		}
 	}
 }
 
@@ -185,6 +277,65 @@ int ArbolBinario::profundidad(Nodo *raiz){
     }
 }
 
+bool ArbolBinario::esCompleto(Nodo *raiz){
+	if(raiz!=NULL){
+		if(raiz->der!=NULL && raiz->izq!=NULL){
+			return esCompleto(raiz->der) && esCompleto(raiz->izq);
+		}else if(raiz->der==NULL && raiz->izq==NULL){
+			return true;
+		}
+		return false;
+	}
+	return true;
+}
+
+class ArbolBinarioOrd::ArbolBinario{
+	public:
+		ArbolBinarioOrd();
+		Nodo *agregar(Nodo *,int);
+};
+
+ArbolBinarioOrd::ArbolBinarioOrd(){
+	raiz= NULL;
+}
+
+ArbolBinarioOrd::Agregar(Nodo *r, int dato){
+	if(r!=NULL){
+		if(r->dato<dato){
+			if(r->der!=NULL)
+				Agregar(r->der,dato);
+			else{
+				Nodo aux;
+				aux->dato=dato;
+				aux->izq=NULL;
+				aux->der=NULL;
+				r->der = aux;
+			}
+		}else{
+			if(r->dato=dato){
+				return raiz;
+			}
+			if(r->izq!=NULL)
+				Agregar(r->izq,dato);
+			else{
+				Nodo aux;
+				aux->dato=dato;
+				aux->izq=NULL;
+				aux->der=NULL;
+				r->izq = aux;
+			}
+		}
+	}
+	else{
+		Nodo aux;
+		aux->dato=dato;
+		aux->izq=NULL;
+		aux->der=NULL;
+		r = aux;
+	}
+	return raiz;
+}
+
 char menu(){
 	char opcion;
 	cout<<"\n MENU\n";
@@ -193,6 +344,8 @@ char menu(){
 	cout<<"(B)uscar\n";
 	cout<<"(P)rofundidad\n";
 	cout<<"(M)ostrar\n";
+	cout<<"(C)ontar\n";
+	cout<<"Comp(L)eto\n";
 	cout<<"(T)erminar\n";
 	cout<<"Eliga una opcion: ";
 	cin>>opcion;
@@ -246,7 +399,27 @@ int main(){
 				arbol.mostrarInorden(raiz);
 				cout<<"\nEl arbol en PostOrden:\n";
 				arbol.mostrarPostorden(raiz);
-				break;			
+				cout<<"\nEl arbol por Niveles:\n";
+				arbol.mostrarNiveles();
+				break;
+				
+			case 'c':
+			case 'C':
+				int nodos, hojas;
+				nodos = arbol.contarNodos();
+				hojas = arbol.contarHojas();
+			    cout<<"Cantidad Nodos ="<<nodos;
+			    cout<<"Cantidad Hojas ="<<hojas;	
+				break;		
+				
+			case 'L':
+			case 'l':
+				raiz = arbol.getRaiz();
+				if(arbol.esCompleto(raiz))
+				   cout<<"\nEl arbol es completo\n";
+				else
+				   cout<<"\nEl arbol no es completo\n";
+				break;
 		}
 	}while(opcion!='T' && opcion!='t');
 	return 0;
